@@ -108,11 +108,11 @@ class CNN_LSTM_METRICS(nn.Module):
             nn.Linear(hidden_fc2, num_classes),
         )
         self.embedding = nn.Embedding(vocab_size, embedding_dim)
-        self.conv1 = nn.RGCNConv(embedding_dim, embedding_dim, 18)
-        self.conv2 = nn.RGCNConv(embedding_dim, embedding_dim, 18)
-        self.conv3 = nn.RGCNConv(embedding_dim, embedding_dim, 18)
-        self.conv4 = nn.RGCNConv(embedding_dim, embedding_dim, 18)
-        self.conv5 = nn.RGCNConv(embedding_dim, embedding_dim, 18)
+        self.conv1 = RGCNConv(embedding_dim, embedding_dim, 18)
+        self.conv2 = RGCNConv(embedding_dim, embedding_dim, 18)
+        self.conv3 = RGCNConv(embedding_dim, embedding_dim, 18)
+        self.conv4 = RGCNConv(embedding_dim, embedding_dim, 18)
+        self.conv5 = RGCNConv(embedding_dim, embedding_dim, 18)
     
     def forward(self, text, metrics, data):
         out = self.conv_layers(text)

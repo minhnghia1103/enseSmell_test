@@ -83,8 +83,8 @@ if __name__ == "__main__":
                 write_file(track_file, f"{'=+'*25} FOLD: {index+1} / 5 {'+='*25}\n")
                 # Sample elements randomly from given list of ids, no replacement
                 if args.model == 'DeepSmells_METRICS' or args.model == 'DeepSmells_TokenIndexing_METRICS':
-                    train_set = data.DatasetCombineWithGraph(datasets.train_data, datasets.train_data_metrics, datasets.train_labels, datasets.train_graph)
-                    valid_set = data.DatasetCombineWithGraph(datasets.eval_data, datasets.eval_data_metrics, datasets.eval_labels, datasets.eval_graph)
+                    train_set = data.DatasetCombineWithGraph(datasets.train_data, datasets.train_data_metrics, datasets.train_labels, datasets.train_graph_data)
+                    valid_set = data.DatasetCombineWithGraph(datasets.eval_data, datasets.eval_data_metrics, datasets.eval_labels, datasets.eval_graph_data)
                 if args.model == 'DeepSmells' or args.model == 'DeepSmells_TokenIndexing': 
                     train_set = data.Dataset(datasets.train_data, datasets.train_labels)
                     valid_set = data.Dataset(datasets.eval_data, datasets.eval_labels)

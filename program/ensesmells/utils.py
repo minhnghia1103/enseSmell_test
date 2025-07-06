@@ -25,10 +25,19 @@ import input_data
 
 from sklearn.model_selection import StratifiedKFold
 
-def write_file(file, str):
-    file = open(file, mode="a+")
-    file.write(str)
-    file.close()
+def write_file(file_path, content):
+    """
+    Write content to a file. Creates the file if it doesn't exist.
+    
+    Args:
+        file_path (str): Path to the file
+        content (str): Content to write to the file
+    """
+    try:
+        with open(file_path, mode="a+", encoding='utf-8') as f:
+            f.write(content)
+    except Exception as e:
+        print(f"Error writing to file {file_path}: {e}")
 
 def device():
     if torch.cuda.is_available():
@@ -131,6 +140,7 @@ def get_data_token_indexing_COMBINING(data_path, graph_path):
         raw_data = json.load(f)
         sample_data_dict = {int(k): v for k, v in raw_data.items()}
 
+    df = df[df['sample_id'] != 4620157].reset_index(drop=True)
     # map graph_info vào từng sample
     df['data'] = df['sample_id'].map(sample_data_dict)
 
