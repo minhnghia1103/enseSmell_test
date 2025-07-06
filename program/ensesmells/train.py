@@ -14,6 +14,7 @@ from torch.cuda.amp import GradScaler, autocast
 # my tool
 from utils import write_file
 from config import Config, argument
+from focal_loss import FocalLoss, WeightedFocalLoss
 
 args = argument()
 
@@ -146,7 +147,14 @@ class Trainer():
 
             # Result of epoch train
             train_preds, train_targets = self.train_one_epoch()
-            train_loss_all = self.train_loss_fn(torch.Tensor(train_preds), torch.Tensor(train_targets))
+            
+            # Handle different loss function types for evaluation
+            if isinstance(self.train_loss_fn, (FocalLoss, WeightedFocalLoss)):
+                # For focal loss, we need to convert predictions to same format as targets
+                train_loss_all = self.train_loss_fn(torch.Tensor(train_preds), torch.Tensor(train_targets))
+            else:
+                # Standard BCE loss
+                train_loss_all = self.train_loss_fn(torch.Tensor(train_preds), torch.Tensor(train_targets))
 
             train_preds = [True if torch.sigmoid(torch.tensor(pred[0])) >= threshold else False for pred in train_preds]
             train_targets = [True if target[0] == 1.0 else False for target in train_targets]
@@ -156,7 +164,14 @@ class Trainer():
 
             # Result of epoch valid
             valid_preds, valid_targets = self.valid_one_epoch()
-            valid_loss_all = self.valid_loss_fn(torch.Tensor(valid_preds), torch.Tensor(valid_targets))
+            
+            # Handle different loss function types for evaluation
+            if isinstance(self.valid_loss_fn, (FocalLoss, WeightedFocalLoss)):
+                # For focal loss, we need to convert predictions to same format as targets
+                valid_loss_all = self.valid_loss_fn(torch.Tensor(valid_preds), torch.Tensor(valid_targets))
+            else:
+                # Standard BCE loss
+                valid_loss_all = self.valid_loss_fn(torch.Tensor(valid_preds), torch.Tensor(valid_targets))
 
             valid_preds = [True if torch.sigmoid(torch.tensor(pred[0])) >= threshold else False for pred in valid_preds]
             valid_targets = [True if target[0] == 1.0 else False for target in valid_targets]
