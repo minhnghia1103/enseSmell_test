@@ -24,17 +24,38 @@ def analyze_class_distribution(targets, dataset_name="Dataset"):
     if len(targets.shape) > 1:
         targets = targets.flatten()
     
-    # Count classes
+    # Convert to float for consistent comparison
+    targets = targets.astype(float)
+    
+    # Count classes - handle both 0/1 and 0.0/1.0
     counter = Counter(targets)
     total_samples = len(targets)
     
-    # Calculate statistics
-    pos_count = counter.get(1.0, 0) + counter.get(1, 0)  # Handle both int and float
-    neg_count = counter.get(0.0, 0) + counter.get(0, 0)
+    # Calculate statistics - be more flexible with class labels
+    pos_count = 0
+    neg_count = 0
+    
+    for label, count in counter.items():
+        if abs(label - 1.0) < 1e-6:  # Close to 1.0
+            pos_count += count
+        elif abs(label - 0.0) < 1e-6:  # Close to 0.0
+            neg_count += count
+    
+    # Handle edge cases
+    if total_samples == 0:
+        return {
+            'total_samples': 0,
+            'positive_samples': 0,
+            'negative_samples': 0,
+            'positive_ratio': 0.0,
+            'negative_ratio': 0.0,
+            'imbalance_ratio': 1.0,
+            'recommended_pos_weight': 1.0
+        }
     
     pos_ratio = pos_count / total_samples
     neg_ratio = neg_count / total_samples
-    imbalance_ratio = max(pos_count, neg_count) / min(pos_count, neg_count) if min(pos_count, neg_count) > 0 else float('inf')
+    imbalance_ratio = max(pos_count, neg_count) / max(min(pos_count, neg_count), 1) if min(pos_count, neg_count) > 0 else float('inf')
     
     stats = {
         'total_samples': total_samples,
@@ -43,7 +64,7 @@ def analyze_class_distribution(targets, dataset_name="Dataset"):
         'positive_ratio': pos_ratio,
         'negative_ratio': neg_ratio,
         'imbalance_ratio': imbalance_ratio,
-        'recommended_pos_weight': neg_count / pos_count if pos_count > 0 else 1.0
+        'recommended_pos_weight': neg_count / max(pos_count, 1) if pos_count > 0 else 1.0
     }
     
     # Print statistics

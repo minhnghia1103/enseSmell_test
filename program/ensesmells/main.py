@@ -136,6 +136,40 @@ def custom_collate_fn(batch):
             # If default collate fails, return batch as is
             return batch
 
+def safe_extract_labels(labels):
+    """
+    Safely extract labels from different formats (scalars, arrays, tensors)
+    
+    Args:
+        labels: List of labels in various formats
+    
+    Returns:
+        List of scalar labels
+    """
+    extracted_labels = []
+    
+    for i in range(len(labels)):
+        label = labels[i]
+        
+        # Handle torch tensors
+        if hasattr(label, 'item'):
+            extracted_labels.append(label.item())
+        # Handle numpy arrays or lists with single element
+        elif hasattr(label, '__getitem__') and hasattr(label, '__len__'):
+            if len(label) > 0:
+                # If it's an array/list, take the first element
+                if hasattr(label[0], 'item'):
+                    extracted_labels.append(label[0].item())
+                else:
+                    extracted_labels.append(label[0])
+            else:
+                extracted_labels.append(0)  # Default value for empty arrays
+        # Handle scalars (int, float)
+        else:
+            extracted_labels.append(label)
+    
+    return extracted_labels
+
 if __name__ == "__main__":
     # Configuration for different loss functions and their parameters
     loss_configs = [
@@ -194,9 +228,17 @@ if __name__ == "__main__":
                 print(f"{'=+'*25} FOLD: {index+1} / 5 {'+='*25}")
                 write_file(track_file, f"{'=+'*25} FOLD: {index+1} / 5 {'+='*25}\n")
                 
+                # Debug: Print label format information
+                if index == 0:
+                    sample_label = datasets.train_labels[0]
+                    print(f"DEBUG - Label format: type={type(sample_label)}, value={sample_label}")
+                    if hasattr(sample_label, 'shape'):
+                        print(f"DEBUG - Label shape: {sample_label.shape}")
+                    write_file(track_file, f"DEBUG - Label format: type={type(sample_label)}, value={sample_label}\n")
+                
                 # Analyze class distribution for current fold
                 if index == 0:  # Only analyze for first fold to avoid repetition
-                    train_targets_flat = [datasets.train_labels[i][0] for i in range(len(datasets.train_labels))]
+                    train_targets_flat = safe_extract_labels(datasets.train_labels)
                     class_stats = analyze_class_distribution(train_targets_flat, f"Training Set - Fold {index+1}")
                     write_file(track_file, f"Class distribution analysis:\n")
                     write_file(track_file, f"Positive samples: {class_stats['positive_samples']} ({class_stats['positive_ratio']:.2%})\n")
@@ -239,7 +281,7 @@ if __name__ == "__main__":
                 # step_lr_scheduler = lr_scheduler.StepLR(optimizer, step_size=5, gamma=0.8)
 
                 # Calculate class weights automatically from training data
-                train_targets = [datasets.train_labels[i][0] for i in range(len(datasets.train_labels))]
+                train_targets = safe_extract_labels(datasets.train_labels)
                 auto_pos_weight = calculate_class_weights(train_targets, method='inverse_freq')
                 
                 # Use specified pos_weight or auto-calculated weight

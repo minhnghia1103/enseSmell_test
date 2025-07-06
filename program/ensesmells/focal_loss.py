@@ -111,12 +111,22 @@ def calculate_class_weights(targets, method='inverse_freq'):
         pos_weight: Weight for positive class
     """
     if isinstance(targets, list):
-        targets = torch.tensor(targets)
+        targets = torch.tensor(targets, dtype=torch.float)
+    elif isinstance(targets, torch.Tensor):
+        targets = targets.float()
+    else:
+        targets = torch.tensor(targets, dtype=torch.float)
     
     # Count positive and negative samples
-    pos_count = torch.sum(targets == 1).float()
-    neg_count = torch.sum(targets == 0).float()
+    pos_count = torch.sum(torch.abs(targets - 1.0) < 1e-6).float()  # Close to 1.0
+    neg_count = torch.sum(torch.abs(targets - 0.0) < 1e-6).float()  # Close to 0.0
     total_count = len(targets)
+    
+    # Handle edge cases
+    if pos_count == 0:
+        return torch.tensor(1.0)
+    if neg_count == 0:
+        return torch.tensor(1.0)
     
     if method == 'inverse_freq':
         # Inverse frequency weighting
@@ -126,6 +136,9 @@ def calculate_class_weights(targets, method='inverse_freq'):
         pos_weight = total_count / (2.0 * pos_count)
     else:
         pos_weight = torch.tensor(1.0)
+    
+    # Cap extreme weights to prevent training instability
+    pos_weight = torch.clamp(pos_weight, min=0.1, max=100.0)
     
     return pos_weight
 
