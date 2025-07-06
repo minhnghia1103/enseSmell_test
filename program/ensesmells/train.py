@@ -148,13 +148,17 @@ class Trainer():
             # Result of epoch train
             train_preds, train_targets = self.train_one_epoch()
             
+            # Ensure tensors are on same device before computing loss
+            train_preds_tensor = torch.Tensor(train_preds).to(self.device)
+            train_targets_tensor = torch.Tensor(train_targets).to(self.device)
+            
             # Handle different loss function types for evaluation
             if isinstance(self.train_loss_fn, (FocalLoss, WeightedFocalLoss)):
                 # For focal loss, we need to convert predictions to same format as targets
-                train_loss_all = self.train_loss_fn(torch.Tensor(train_preds), torch.Tensor(train_targets))
+                train_loss_all = self.train_loss_fn(train_preds_tensor, train_targets_tensor)
             else:
                 # Standard BCE loss
-                train_loss_all = self.train_loss_fn(torch.Tensor(train_preds), torch.Tensor(train_targets))
+                train_loss_all = self.train_loss_fn(train_preds_tensor, train_targets_tensor)
 
             train_preds = [True if torch.sigmoid(torch.tensor(pred[0])) >= threshold else False for pred in train_preds]
             train_targets = [True if target[0] == 1.0 else False for target in train_targets]
@@ -165,13 +169,17 @@ class Trainer():
             # Result of epoch valid
             valid_preds, valid_targets = self.valid_one_epoch()
             
+            # Ensure tensors are on same device before computing loss
+            valid_preds_tensor = torch.Tensor(valid_preds).to(self.device)
+            valid_targets_tensor = torch.Tensor(valid_targets).to(self.device)
+            
             # Handle different loss function types for evaluation
             if isinstance(self.valid_loss_fn, (FocalLoss, WeightedFocalLoss)):
                 # For focal loss, we need to convert predictions to same format as targets
-                valid_loss_all = self.valid_loss_fn(torch.Tensor(valid_preds), torch.Tensor(valid_targets))
+                valid_loss_all = self.valid_loss_fn(valid_preds_tensor, valid_targets_tensor)
             else:
                 # Standard BCE loss
-                valid_loss_all = self.valid_loss_fn(torch.Tensor(valid_preds), torch.Tensor(valid_targets))
+                valid_loss_all = self.valid_loss_fn(valid_preds_tensor, valid_targets_tensor)
 
             valid_preds = [True if torch.sigmoid(torch.tensor(pred[0])) >= threshold else False for pred in valid_preds]
             valid_targets = [True if target[0] == 1.0 else False for target in valid_targets]

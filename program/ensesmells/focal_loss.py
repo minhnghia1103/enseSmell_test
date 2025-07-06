@@ -27,10 +27,19 @@ class FocalLoss(nn.Module):
             inputs: Model predictions (logits)
             targets: Ground truth labels
         """
+        # Ensure inputs and targets are on the same device
+        if inputs.device != targets.device:
+            targets = targets.to(inputs.device)
+        
+        # Ensure pos_weight is on the same device as inputs
+        pos_weight = self.pos_weight
+        if pos_weight is not None and pos_weight.device != inputs.device:
+            pos_weight = pos_weight.to(inputs.device)
+        
         # Convert logits to probabilities
         ce_loss = F.binary_cross_entropy_with_logits(
             inputs, targets, 
-            pos_weight=self.pos_weight,
+            pos_weight=pos_weight,
             reduction='none'
         )
         
@@ -67,6 +76,10 @@ class WeightedFocalLoss(nn.Module):
         self.reduction = reduction
     
     def forward(self, inputs, targets):
+        # Ensure inputs and targets are on the same device
+        if inputs.device != targets.device:
+            targets = targets.to(inputs.device)
+        
         # Apply sigmoid to get probabilities
         sigmoid_p = torch.sigmoid(inputs)
         
@@ -76,7 +89,10 @@ class WeightedFocalLoss(nn.Module):
         
         # Apply class weights (pos_weight)
         if self.pos_weight is not None:
-            ce_loss = ce_loss * (targets * self.pos_weight + (1 - targets))
+            pos_weight = self.pos_weight
+            if pos_weight.device != inputs.device:
+                pos_weight = pos_weight.to(inputs.device)
+            ce_loss = ce_loss * (targets * pos_weight + (1 - targets))
         
         # Calculate pt for focal term
         pt = targets * sigmoid_p + (1 - targets) * (1 - sigmoid_p)
@@ -155,6 +171,10 @@ def get_loss_function(loss_type='focal', pos_weight=None, alpha=0.25, gamma=2.0)
     Returns:
         Loss function
     """
+    # Ensure pos_weight is a tensor if provided
+    if pos_weight is not None and not isinstance(pos_weight, torch.Tensor):
+        pos_weight = torch.tensor(float(pos_weight))
+    
     if loss_type == 'bce':
         return nn.BCEWithLogitsLoss(pos_weight=pos_weight)
     elif loss_type == 'focal':

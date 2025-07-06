@@ -76,11 +76,15 @@ def custom_collate_fn(batch):
                 data = data.to(device)
                 data_list.append(data)
             else:
-                # Regular tensor data, move to device
+                # Regular tensor data, ensure it's a tensor and move to device
+                if not isinstance(data, torch.Tensor):
+                    data = torch.tensor(data)
                 data = data.to(device)
                 data_list.append(data)
             
-            # Move label to device
+            # Move label to device, ensure it's a tensor
+            if not isinstance(label, torch.Tensor):
+                label = torch.tensor(label)
             label = label.to(device)
             label_list.append(label)
         
@@ -104,11 +108,22 @@ def custom_collate_fn(batch):
         for item in batch:
             data, metrics, label, graph = item
             
-            # Move all tensors to device
+            # Move all tensors to device and ensure they are tensors
+            if not isinstance(data, torch.Tensor):
+                data = torch.tensor(data)
             data = data.to(device)
+            
+            if not isinstance(metrics, torch.Tensor):
+                metrics = torch.tensor(metrics)
             metrics = metrics.to(device)
+            
+            if not isinstance(label, torch.Tensor):
+                label = torch.tensor(label)
             label = label.to(device)
-            graph = graph.to(device)
+            
+            # Handle graph data
+            if hasattr(graph, 'to'):
+                graph = graph.to(device)
             
             data_list.append(data)
             metrics_list.append(metrics)
@@ -169,6 +184,28 @@ def safe_extract_labels(labels):
             extracted_labels.append(label)
     
     return extracted_labels
+
+def ensure_tensor_device(tensor, device):
+    """
+    Ensure tensor is on the specified device
+    
+    Args:
+        tensor: Input tensor or data
+        device: Target device
+    
+    Returns:
+        Tensor on the specified device
+    """
+    if tensor is None:
+        return None
+    
+    if not isinstance(tensor, torch.Tensor):
+        tensor = torch.tensor(tensor)
+    
+    if tensor.device != device:
+        tensor = tensor.to(device)
+    
+    return tensor
 
 if __name__ == "__main__":
     # Configuration for different loss functions and their parameters
@@ -286,6 +323,7 @@ if __name__ == "__main__":
                 
                 # Use specified pos_weight or auto-calculated weight
                 final_pos_weight = torch.tensor(pos_weight, dtype=torch.float) if pos_weight != 'auto' else auto_pos_weight
+                final_pos_weight = ensure_tensor_device(final_pos_weight, config.Config.DEVICE)
                 
                 # Create loss functions based on configuration
                 train_loss_fn = get_loss_function(
@@ -293,14 +331,14 @@ if __name__ == "__main__":
                     pos_weight=final_pos_weight,
                     alpha=alpha if alpha != 'None' else None,
                     gamma=gamma if gamma != 'None' else None
-                ).to(config.Config.DEVICE)
+                )
                 
                 valid_loss_fn = get_loss_function(
                     loss_type=loss_type,
                     pos_weight=final_pos_weight,
                     alpha=alpha if alpha != 'None' else None,
                     gamma=gamma if gamma != 'None' else None
-                ).to(config.Config.DEVICE)
+                )
                 
                 print(f"Using {loss_type} loss with pos_weight={final_pos_weight.item():.4f}")
                 write_file(track_file, f"Using {loss_type} loss with pos_weight={final_pos_weight.item():.4f}\n")
