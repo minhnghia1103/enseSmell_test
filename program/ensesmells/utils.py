@@ -27,13 +27,18 @@ from sklearn.model_selection import StratifiedKFold
 
 def write_file(file_path, content):
     """
-    Write content to a file. Creates the file if it doesn't exist.
+    Write content to a file. Creates the file and directories if they don't exist.
     
     Args:
         file_path (str): Path to the file
         content (str): Content to write to the file
     """
     try:
+        # Create directory if it doesn't exist
+        directory = os.path.dirname(file_path)
+        if directory and not os.path.exists(directory):
+            os.makedirs(directory, exist_ok=True)
+        
         with open(file_path, mode="a+", encoding='utf-8') as f:
             f.write(content)
     except Exception as e:
