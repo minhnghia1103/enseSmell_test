@@ -78,7 +78,7 @@ class CNN_BiLSTM(nn.Module):
         return out
 
 class CNN_LSTM_METRICS(nn.Module):
-    def __init__(self, kernel_size,vocab_size,embedding_dim ,input_size_lstm, hidden_size_lstm, metrics_size, input_dim=1, conv_dim1=16, conv_dim2=32, hidden_fc1=32, hidden_fc2=16, num_classes=1):
+    def __init__(self, kernel_size,vocab_size,embedding_dim ,input_size_lstm, hidden_size_lstm, metrics_size, input_dim=1, conv_dim1=16, conv_dim2=32, hidden_fc1=128, hidden_fc2=32, hidden_fc3=16, num_classes=1):
         super(CNN_LSTM_METRICS, self).__init__()
         
         self.conv_layers = nn.Sequential(
@@ -105,7 +105,9 @@ class CNN_LSTM_METRICS(nn.Module):
             nn.ReLU(),
             nn.Linear(hidden_fc1, hidden_fc2),
             nn.ReLU(),
-            nn.Linear(hidden_fc2, num_classes),
+            nn.Linear(hidden_fc2, hidden_fc3),
+            nn.ReLU(),
+            nn.Linear(hidden_fc3, num_classes),
         )
         self.embedding = nn.Embedding(vocab_size, embedding_dim)
         self.conv1 = RGCNConv(embedding_dim, embedding_dim, 18)
