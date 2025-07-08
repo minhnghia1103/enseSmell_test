@@ -145,9 +145,8 @@ def get_data_token_indexing_COMBINING(data_path, graph_path):
         raw_data = json.load(f)
         sample_data_dict = {int(k): v for k, v in raw_data.items()}
 
-    df = df[df['sample_id'] != 4620157].reset_index(drop=True)
-    # map graph_info vào từng sample
     df['data'] = df['sample_id'].map(sample_data_dict)
+    df = df[~df['data'].isna()].reset_index(drop=True)
 
     max_input_length = get_outlier_threshold(df, z=1)
     # Process give embedding length to max_input_length
