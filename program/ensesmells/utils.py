@@ -151,13 +151,20 @@ def get_data_token_indexing_COMBINING(data_path, graph_path):
     max_input_length = get_outlier_threshold(df, z=1)
     # Process give embedding length to max_input_length
     for index in range(len(df)):
-        arr_size = df['embedding'][index].shape[0]
-
-        if df['embedding'][index].shape[0] < max_input_length:
-            num_zeros = max_input_length - len(df['embedding'][index])
-            df['embedding'][index] = np.pad(df['embedding'][index], (0, num_zeros), 'constant')
+        embedding = df['embedding'][index]
+        
+        # Handle both numpy arrays and lists
+        if hasattr(embedding, 'shape'):
+            arr_size = embedding.shape[0]
         else:
-            df['embedding'][index] = df['embedding'][index][:max_input_length]
+            arr_size = len(embedding)
+            embedding = np.array(embedding)  # Convert to numpy array for processing
+
+        if arr_size < max_input_length:
+            num_zeros = max_input_length - arr_size
+            df['embedding'][index] = np.pad(embedding, (0, num_zeros), 'constant')
+        else:
+            df['embedding'][index] = embedding[:max_input_length]
 
     X = np.array([row for row in df['embedding']])
     X_metrics = np.array([row for row in df['metrics']])
@@ -242,13 +249,20 @@ def get_data_token_indexing(data_path):
 
     # Process give embedding length to max_input_length
     for index in range(len(df['embedding'])):
-        arr_size = df['embedding'][index].shape[0]
-
-        if df['embedding'][index].shape[0] < max_input_length:
-            num_zeros = max_input_length - len(df['embedding'][index])
-            df['embedding'][index] = np.pad(df['embedding'][index], (0, num_zeros), 'constant')
+        embedding = df['embedding'][index]
+        
+        # Handle both numpy arrays and lists
+        if hasattr(embedding, 'shape'):
+            arr_size = embedding.shape[0]
         else:
-            df['embedding'][index] = df['embedding'][index][:max_input_length]
+            arr_size = len(embedding)
+            embedding = np.array(embedding)  # Convert to numpy array for processing
+
+        if arr_size < max_input_length:
+            num_zeros = max_input_length - arr_size
+            df['embedding'][index] = np.pad(embedding, (0, num_zeros), 'constant')
+        else:
+            df['embedding'][index] = embedding[:max_input_length]
 
     X = np.array([row for row in df['embedding']])
     y = df['label'].values
@@ -271,7 +285,11 @@ def get_outlier_threshold(df, z=1):
 def _get_outlier_threshold(df, z):
     lengths = []
     for i in range(len(df)):
-        lengths.append(df['embedding'].iloc[i].shape[0])
+        embedding = df['embedding'].iloc[i]
+        if hasattr(embedding, 'shape'):
+            lengths.append(embedding.shape[0])
+        else:
+            lengths.append(len(embedding))
     return compute_max(lengths, z=z)
 
 def compute_max(arr, dim="width", z=2):
