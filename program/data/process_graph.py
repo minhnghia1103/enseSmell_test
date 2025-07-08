@@ -2,7 +2,7 @@ import os
 import json
 
 # Đọc dữ liệu từ file JSON
-with open('D:/codeSmell/JSS-EnseSmells/EnseSmells/program/data/graph.json', 'r') as f:
+with open('D:/codeSmell/JSS-EnseSmells/EnseSmells/program/data/feature_envy/graph.json', 'r') as f:
     data = json.load(f)
 
 # Tạo một dictionary mới để lưu các key mới là tên file

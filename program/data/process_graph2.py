@@ -3,13 +3,15 @@ import pandas as pd
 import json
 
 # Đọc pickle
-with open("D:/codeSmell/JSS-EnseSmells/EnseSmells/program/data/gotClass/GodClass_TokenIndexing_metrics.pkl", "rb") as file:
+with open("D:/codeSmell/JSS-EnseSmells/EnseSmells/program/data/feature_envy/FeatureEnvy_CuBERT_metrics.pkl", "rb") as file:
     df = pd.read_pickle(file)
+print(f"Số lượng dòng trong DataFrame: {len(df)}")
 
 # Đọc JSON
-with open('D:/codeSmell/JSS-EnseSmells/EnseSmells/program/data/gotClass/graph_godClass_dictName.json', 'r') as f:
+with open('D:/codeSmell/JSS-EnseSmells/EnseSmells/program/data/feature_envy/featureEnvy_dict_graph.json', 'r') as f:
     raw_data = json.load(f)
     sample_data_dict = {int(k): v for k, v in raw_data.items()}
+print(f"Số lượng sample_id trong JSON: {len(sample_data_dict)}")
 
 # Gán data từ JSON vào DataFrame
 df['data'] = df['sample_id'].map(sample_data_dict)
