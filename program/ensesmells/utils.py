@@ -150,16 +150,16 @@ def get_data_token_indexing_COMBINING(data_path, graph_path):
     df['data'] = df['sample_id'].map(sample_data_dict)
     df = df[~df['data'].isna()].reset_index(drop=True)
 
-    # max_input_length = get_outlier_threshold(df, z=1)
-    # # Process give embedding length to max_input_length
-    # for index in range(len(df)):
-    #     arr_size = df['embedding'][index].shape[0]
+    max_input_length = get_outlier_threshold(df, z=1)
+    # Process give embedding length to max_input_length
+    for index in range(len(df)):
+        arr_size = df['embedding'][index].shape[0]
 
-    #     if df['embedding'][index].shape[0] < max_input_length:
-    #         num_zeros = max_input_length - len(df['embedding'][index])
-    #         df['embedding'][index] = np.pad(df['embedding'][index], (0, num_zeros), 'constant')
-    #     else:
-    #         df['embedding'][index] = df['embedding'][index][:max_input_length]
+        if df['embedding'][index].shape[0] < max_input_length:
+            num_zeros = max_input_length - len(df['embedding'][index])
+            df['embedding'][index] = np.pad(df['embedding'][index], (0, num_zeros), 'constant')
+        else:
+            df['embedding'][index] = df['embedding'][index][:max_input_length]
 
     X = np.array([row for row in df['embedding']])
     X_metrics = np.array([row for row in df['metrics']])

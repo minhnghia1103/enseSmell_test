@@ -7,7 +7,7 @@ with open("D:/codeSmell/JSS-EnseSmells/EnseSmells/program/data/gotClass/GodClass
     df = pd.read_pickle(file)
 print(f"Số lượng dòng trong DataFrame: {len(df)}")
 
-print("22222222222: ",df.head())
+print("22222222222: ",df['embedding'][:10])
 
 # # Đọc JSON
 # with open('D:/codeSmell/JSS-EnseSmells/EnseSmells/program/data/feature_envy/featureEnvy_dict_graph.json', 'r') as f:
