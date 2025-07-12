@@ -138,11 +138,10 @@ if __name__ == "__main__":
     pos_weight_set = [
         torch.tensor(4.0, dtype=torch.float),
         torch.tensor(8.0, dtype=torch.float), 
-        torch.tensor(12.0, dtype=torch.float), 
-        torch.tensor(32.0, dtype=torch.float)
+        torch.tensor(12.0, dtype=torch.float)
     ]
 
-    kernel_size_set = [ 5]
+    kernel_size_set = [3]
     now = datetime.datetime.now()
 
     data_path = args.data_path
